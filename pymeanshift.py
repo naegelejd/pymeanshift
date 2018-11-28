@@ -64,7 +64,12 @@ def segment(image, spatial_radius, range_radius, min_density, speedup_level=SPEE
     contiguous in memory.    
     
     '''        
-    return _pymeanshift.segment(image, spatial_radius, range_radius, min_density, speedup_level)
+    if image.dtype.name == 'uint8':
+        return _pymeanshift.segmentImage(image, spatial_radius, range_radius, min_density, speedup_level)
+    elif image.dtype.name == 'float32':
+        return _pymeanshift.segmentLInput(image, spatial_radius, range_radius, min_density, speedup_level)
+    else:
+        raise TypeError('Only 8-bit unsigned (RGB) images and 32-bit float (LAB) images can be segmented')
     
 
 class Segmenter(object):
@@ -115,7 +120,7 @@ class Segmenter(object):
         if self._min_density is None:
             raise ValueError("Minimum density has not been set")        
         
-        return _pymeanshift.segment(image, self._spatial_radius, self._range_radius, self._min_density, self._speedup_level)
+        return segment(image, self._spatial_radius, self._range_radius, self._min_density, self._speedup_level)
                 
     def __str__(self):
         return "<Segmenter: spatial_radius={}, range_radius={}, min_density={}, speedup_level={}>".format(
